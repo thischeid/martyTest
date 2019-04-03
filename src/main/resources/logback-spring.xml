@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/base.xml" />
+	
+	<springProperty scope="context" name="PROFILE_ACTIVE"
+		source="spring.profiles.active" />
+
+	<springProperty scope="context" name="APP_NAME"
+		source="spring.application.name" />
+
+	<springProperty scope="context" name="BZTOKEN" source="bztoken" />
+
+	<appender name="burzum"
+		class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+		<remoteHost>log.burzum.appsluiza.com.br</remoteHost>
+		<port>5033</port>
+		<ssl />
+		<encoder class="net.logstash.logback.encoder.LogstashEncoder">
+			<customFields>{"bztoken":"${BZTOKEN}", "environment" : "${PROFILE_ACTIVE}", "app" : "${APP_NAME}", "type":"json"}</customFields>
+		</encoder>
+	</appender>
+
+   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+         <Pattern>%X{session} %d{yyyy-MM-dd_HH:mm:ss.SSS} %logger{36} %-5level %msg %n</Pattern>
+      </encoder>
+   </appender>
+
+
+	<!-- <logger name="org.springframework.jdbc" level="TRACE" additivity="false" >
+    	<appender-ref ref="STDOUT" />
+    	<appender-ref ref="burzum" />	
+    </logger>
+    <logger name="org.springframework.jdbc.DataSourceTransactionManager" level="DEBUG" additivity="false" >
+    	<appender-ref ref="STDOUT" />
+    	<appender-ref ref="burzum" />	
+    </logger>
+   <logger name="org.springframework.jdbc.core.StatementCreatorUtils" level="TRACE" additivity="false" >
+    	<appender-ref ref="STDOUT" />
+    	<appender-ref ref="burzum" />	
+    </logger> -->
+    
+    <logger name="com.luizalabs.marty.filter.http.HttpLoggingFilter" level="TRACE" additivity="false">
+    	<appender-ref ref="STDOUT" />
+		<appender-ref ref="burzum" />		
+	</logger> 
+	
+	<logger name="com.luizalabs.marty.MartyApplication" level="DEBUG" additivity="false">
+    	<appender-ref ref="STDOUT" />
+		<appender-ref ref="burzum" />		
+	</logger> 
+	
+	<root level="ERROR" additivity="false">   	
+     <appender-ref ref="STDOUT" />	 
+     <appender-ref ref="burzum" />    
+    </root>
+
+</configuration>

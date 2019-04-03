@@ -1,0 +1,48 @@
+image: circleci/openjdk:8-jdk-browsers
+
+stages:
+  - build
+  - test
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+build: &build
+  stage: build
+  cache:
+    key: m2-cache
+    paths:
+      - .m2/
+  script:
+    - mvn compile -DskipTests -s ./settings.xml --batch-mode
+  only:
+    refs:
+      - branches
+
+build-tag:
+  <<: *build
+  artifacts:
+    paths:
+      - .m2/
+    expire_in: 1h
+  only:
+    variables:
+      - $CI_COMMIT_TAG =~ /^marty-(stage|production)-.+/
+
+test: &test
+  stage: test
+  cache:
+    key: m2-cache
+    paths:
+      - .m2/
+  script:
+    - mvn test sonar:sonar -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_LOGIN
+  only:
+    refs:
+      - branches
+
+test-tag:
+  <<: *test
+  only:
+    variables:
+      - $CI_COMMIT_TAG =~ /^marty-(stage|production)-.+/
